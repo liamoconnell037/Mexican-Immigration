@@ -13,7 +13,12 @@ public class Main {
         new SpanishQuestion("Como se dice \"Ven aquí\" en inglés?", new String[] {"He comes here", "You come here", "I come here", "They go here"}, 'b'),
         new SpanishQuestion("Traduce al inglés: Amo los estados unidos.", new String[] {"He hates the United States", "You love the United States", "They hate the United States", "I love the United States"}, 'd'),
         new HistoryQuestion("¿Quién fue el primer rey de España después de la unificación de España?", new String[] {"Ferdinand II de Aragon", "Henry de VIII", "Reina Elizabeth", "Franz Ferdinand"}, 'a'),
+        new HistoryQuestion("¿Cuándo se fundó el mariachi Vargas de Tecalitlán?", new String[] {"1931", "1898", "1972", "1812"}, 'b'),
+        new HistoryQuestion("En 1519, Hernan Cortes llegó a México. ¿El y sus músicas trajeron qué instrumento?", new String[] {"Guitarra", "Clarinete", "Saxofón"}, 'a'),
+        new HistoryQuestion("¿Quién fue Hernan Cortes?", new String[] {"Músico internacional", "Pintor", "Conquistador espanol", "lustrador de zapatos"}, 'c'),
+        new HistoryQuestion("¿Que vivieron en México antes de que México fuera conquistado?", new String[] {"Aztecas, mayas, toltecas", "Espanoles", "Americanos, británicos, canadienses", "Indios"}, 'a'),
         new GovernmentQuestion("¿Qué tipo de gobierno es México?", new String[] {"Democracia", "República Federal", "Dictadura"}, 'b'),
+    
     };
 
     public static void main(String[] args) {
@@ -43,34 +48,84 @@ public class Main {
             System.out.println("\n\n\n                            TURNO: " + (i+1));
             turn(scanner);
             userWait(scanner);
+            clearScreen();
             utilityCost();
-
+            userWait(scanner);
+            if(i == 9)
+                event(scanner);
+            if(money < 0) {
+                System.out.println("\nYa no tienes dinero...");
+                succeed = false;
+                userWait(scanner);
+            }
+            if(!succeed) {
+                gameOverScreen();
+                userWait(scanner);
+                return;
+            }
         }
         
+        clearScreen();
+        System.out.println("\n\t\tTARIFA DE APLICACION DE CIUDADANÍA: -$725");
+        money -= 725;
+        userWait(scanner);
         if(arrested) {
-            System.out.println("\nTienes antecedentes penales. El gobierno no te darán el examen.");
+            System.out.println("\nTienes antecedentes penales. El gobierno no te da el examen.");
             succeed = false;
             userWait(scanner);
             gameOverScreen();
             userWait(scanner);
             return;
         }
-        if(knowledge < 15)
+        if(knowledge < 7)
             succeed = false;
         clearScreen();
+
+        System.out.println("\nLos estados unidos te da el examen.");
         beginExam(scanner);
+
 
         scanner.close();
     }
 
+    public static void event(Scanner scanner) {
+
+    }
+
     public static void utilityCost() {
-        
+        int cost = (int)(Math.random()*100+265);
+        System.out.println("\n\t\tCOSTO DE LA CUESTAS: -$" + cost);
+        money -= cost;
     }
 
     public static void beginExam(Scanner scanner) {
+        int numCorrect = 0;
         System.out.println("\n\t\tSECCIÓN INGLÉS");
-        for(int i = 0; i < 3;i++) {
-            askQuestion(scanner, Question.QuestionType.Spanish);
+        for(int i = 0; i < 2;i++) {
+            if(askQuestion(scanner, Question.QuestionType.Spanish))
+                numCorrect++;
+        }
+        userWait(scanner);
+        clearScreen();
+        System.out.println("\n\t\tSECCIÓN HISTORIA");
+        for(int i = 0; i < 2;i++) {
+            if(askQuestion(scanner, Question.QuestionType.History))
+                numCorrect++;
+        }
+        userWait(scanner);
+        clearScreen();
+        for(int i = 0; i < 2;i++) {
+            if(askQuestion(scanner, Question.QuestionType.Government))
+                numCorrect++;
+        }
+        clearScreen();
+        System.out.println("\n\tTi nota: " + numCorrect + " / 6");
+        if(numCorrect < 3) {
+            succeed = false;
+            System.out.println("\nTú no pasaste el examen...");
+        }
+        else {
+            System.out.println("\nTú pasaste el examen!");
         }
     }
     public static void gameOverScreen() {
@@ -84,6 +139,7 @@ public class Main {
             System.out.println("\n\n\t\t\t¡NO TIENES CIUDADANIA!");
             System.out.printf("         DINERO: $%d                         PUNTOS: %d", money, points);
         }
+        System.out.println("\n\n");
     }
     
     public static void clearScreen() {  
@@ -103,7 +159,7 @@ public class Main {
 
     public static void turn(Scanner scanner) {
         System.out.println("\n   1. APRENDE INGLÉS\n" +
-                           "   2. APRENDE HISTORIA DE ESTADOS UNIDOS\n" +
+                           "   2. APRENDE HISTORIA\n" +
                            "   3. APRENDE GOBIERNO\n" +
                            "   4. TRABAJA TU TRABAJO");
 
@@ -122,20 +178,20 @@ public class Main {
                 break;
             }
             case 4 : {
-                workJob(scanner);
+                workJob();
                 break;
             }
         }
-
-
     }
-    public static void workJob(Scanner scanner) {
-        money += (int)(Math.random()*900+100);
+    public static void workJob() {
+        int num = (int)(Math.random()*750+250);
+        System.out.println("\n\t\t\tTÚ GANASTE: $" + num);
+        money += num;
+        points += num/5;
     }
 
 
     public static boolean askQuestion(Scanner scanner, Question.QuestionType type) {
-        clearScreen();
         Question q = getRandomQuestion(type);
         System.out.println("\t" + q.getQuestion() + "\n");
         char letter = 'a';
@@ -145,7 +201,7 @@ public class Main {
         }
         System.out.print("\n\t Escribe tu opción: ");
         String response = scanner.nextLine();
-        if(Character.toLowerCase(response.charAt(0)) == q.getRightAnswer()) {
+        if(!(response.length() == 0) && Character.toLowerCase(response.charAt(0)) == q.getRightAnswer()) {
             knowledge++;
             points += 150;
             System.out.println("\n\t\t¡Estás correcto!");
